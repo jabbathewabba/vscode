@@ -8,13 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "install:all": "yarn install",
     "dev:mobile": "yarn workspace events-mobile dev",
     "dev:api": "yarn workspace events-api dev",
-    "db:migrate": "yarn workspace events-api prisma migrate dev --name init",
-    "search:start": "yarn workspace events-api start:search",
-    "docker:up": "docker-compose -f ./docker-compose.dev.yml up -d",
-    "docker:down": "docker-compose -f ./docker-compose.dev.yml down",
     "lint": "eslint . --ext .ts,.tsx,.js --report-unused-disable-directives --max-warnings=0",
     "format": "prettier --write ."
   }

@@ -5,8 +5,7 @@ This file lists the tools and package steps you should install before running th
 System tools
 
 - Node.js (LTS 18+ recommended)
-- pnpm (v7+ recommended) — install via `npm i -g pnpm`
-- Docker Desktop (for Postgres/PostGIS dev DB) — optional but recommended
+- Yarn (v1.22+ recommended) — install via `npm i -g yarn`
 - git
 
 Global / handy tools
@@ -20,23 +19,16 @@ Repository setup steps
 2. Install workspace dependencies:
 
 ```powershell
-pnpm install
+yarn install
 ```
 
-3. Start dev DB (optional, uses docker-compose if `services/api/docker-compose.dev.yml` exists):
+3. Setup local SQLite database (creates `.env.local` with DATABASE_URL):
 
 ```powershell
 powershell -File dev/setup-db.ps1
 ```
 
-4. Generate Prisma Client and apply migrations for the API service:
-
-```powershell
-cd services/api
-npx prisma generate
-npx prisma migrate dev --name init
-npx ts-node prisma/seed.ts   # optional
-```
+4. The start script will automatically generate Prisma Client, push schema and seed the database.
 
 5. Start API and Mobile (in separate terminals):
 
@@ -50,5 +42,6 @@ powershell -File dev/start-mobile.ps1
 
 Notes
 
-- The start scripts are convenience helpers for development; they assume `pnpm` workspace commands `dev:api` and `dev:mobile` are defined in their respective `package.json` files.
-- If you prefer a single terminal, use `dev/start-all.ps1` which opens two new PowerShell windows and runs the start scripts there.
+- The start scripts are convenience helpers for development; they use Yarn workspace commands `dev:api` and `dev:mobile`.
+- If you prefer a single terminal, use `dev/start-all.ps1` which opens two new PowerShell windows for API and Mobile.
+- The API uses SQLite by default (no Docker required). Database file is created at `services/api/dev.db`.

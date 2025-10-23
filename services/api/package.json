@@ -7,10 +7,7 @@
     "start:prod": "node dist/main.js",
     "build": "nest build",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "ts-node --transpile-only prisma/seed.ts",
-    "db:migrate": "pnpm prisma:migrate",
-    "start:search": "meilisearch --env production"
+    "prisma:seed": "ts-node --transpile-only prisma/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

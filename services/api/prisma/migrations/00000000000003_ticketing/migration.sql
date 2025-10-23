@@ -1,2 +1,0 @@
--- Ticketing models migration (assumes models added to schema.prisma)
--- No raw SQL needed for basic prisma models. Use prisma migrate to generate DDL.
