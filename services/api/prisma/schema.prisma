@@ -1,0 +1,302 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Enums converted to String for SQLite compatibility
+// UserRole: ATTENDEE, ORGANIZER, VENUE_OWNER, ADMIN
+// EventStatus: DRAFT, PUBLISHED, ARCHIVED
+// TicketStatus: ACTIVE, USED, REFUNDED, TRANSFERRED
+// OrderStatus: PENDING, COMPLETED, CANCELED, REFUNDED
+
+// Models
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  ageConfirmedAt DateTime?
+  role      String  @default("ATTENDEE") // ATTENDEE, ORGANIZER, VENUE_OWNER, ADMIN
+  passwordHash String?
+  refreshTokenHash String?
+  organizations Organization[] @relation("OrgOwners")
+  organizedEvents Event[] @relation("EventOrganizer")
+  orders    Order[]
+  tickets   Ticket[]
+  follows   Follow[]
+  reviews   Review[]
+  creditBalance Int     @default(0)
+  referralCodes ReferralCode[]
+  redemptions Redemption[]
+  notifications Notification[]
+  eventViews EventView[]
+  addToCarts AddToCart[]
+  purchases Purchase[]
+  waitlistEntries WaitlistEntry[]
+  reservations Reservation[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  owners    User[]   @relation("OrgOwners")
+  venues    Venue[]
+  events    Event[]  @relation("OrgEvents")
+  follows   Follow[]
+  createdAt DateTime @default(now())
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  address     String
+  city        String?
+  region      String?
+  country     String?
+  postalCode  String?
+  latitude    Float
+  longitude   Float
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  events      Event[]
+  follows   Follow[]
+  reviews   Review[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+model Event {
+  id           String      @id @default(cuid())
+  title        String
+  slug         String      @unique
+  description  String?
+  organizer    User        @relation("EventOrganizer", fields: [organizerId], references: [id])
+  organizerId  String
+  organization  Organization? @relation("OrgEvents", fields: [organizationId], references: [id])
+  organizationId String?
+  venue        Venue?      @relation(fields: [venueId], references: [id])
+  venueId      String?
+  categories   String? // JSON string for SQLite compatibility
+  tags         String? // JSON string for SQLite compatibility
+  startAt      DateTime
+  endAt        DateTime?
+  status       String @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  capacity     Int?
+  images       Media[]
+  coverImagePath String?
+  ticketTypes  TicketType[]
+  promotions   Promotion[]  @relation("EventPromotions")
+  waitlistEntries WaitlistEntry[]
+  reservations Reservation[]
+  eventViews   EventView[]
+  addToCarts   AddToCart[]
+  purchases    Purchase[]
+  restricted   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  deletedAt    DateTime?
+}
+
+model TicketType {
+  id           String   @id @default(cuid())
+  event        Event    @relation(fields: [eventId], references: [id])
+  eventId      String
+  name         String
+  price        Float
+  fee          Float?
+  taxPercent   Float?
+  salesWindowStart DateTime?
+  salesWindowEnd   DateTime?
+  maxPerOrder  Int?     
+  accessLevel  String?
+  tickets      Ticket[]
+  addToCarts   AddToCart[]
+  purchases    Purchase[]
+  createdAt    DateTime @default(now())
+  isActive     Boolean  @default(true)
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  user            User        @relation(fields: [userId], references: [id])
+  userId          String
+  status          String @default("PENDING") // PENDING, COMPLETED, CANCELED, REFUNDED
+  amount          Float
+  currency        String      @default("USD")
+  paymentIntentId String?     @unique
+  tickets         Ticket[]
+  purchases       Purchase[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  serial       String       @unique
+  qrPayload    String       @unique
+  ticketType   TicketType   @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId String
+  owner        User?        @relation(fields: [ownerId], references: [id])
+  ownerId      String?
+  order        Order?       @relation(fields: [orderId], references: [id])
+  orderId      String?
+  status       String @default("ACTIVE") // ACTIVE, USED, REFUNDED, TRANSFERRED
+  usedAt       DateTime?
+  transferredTo String?
+  createdAt    DateTime     @default(now())
+}
+
+model Promotion {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  percentOff  Float?
+  amountOff   Float?
+  startAt     DateTime?
+  endAt       DateTime?
+  usageLimit  Int?
+  usedCount   Int      @default(0)
+  events      Event[]  @relation("EventPromotions")
+  createdAt   DateTime @default(now())
+}
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model Reservation {
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  orgId     String?
+  eventId   String?
+  path      String
+  variant   String
+  width     Int?
+  height    Int?
+  face      Boolean  @default(false)
+  status    String   @default("APPROVED")
+  metadata  String? // JSON string for SQLite compatibility
+  createdAt DateTime @default(now())
+  event     Event?   @relation(fields: [eventId], references: [id])
+}
+
+model ReferralCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  owner     User     @relation(fields: [ownerUserId], references: [id])
+  ownerUserId String
+  redeemedCount Int  @default(0)
+  createdAt DateTime @default(now())
+  redemptions Redemption[]
+}
+
+model Redemption {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String
+  referralCode    ReferralCode @relation(fields: [referralCodeId], references: [id])
+  referralCodeId  String
+  createdAt       DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  title     String
+  body      String
+  data      String? // JSON string for SQLite compatibility
+  read      Boolean  @default(false)
+  scheduledAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Follow {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  venue        Venue?   @relation(fields: [venueId], references: [id])
+  venueId      String?
+  createdAt    DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  venue     Venue?   @relation(fields: [venueId], references: [id])
+  venueId   String?
+  rating    Int
+  text      String?
+  createdAt DateTime @default(now())
+}
+
+model EventView {
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime @default(now())
+}
+
+model AddToCart {
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  ticketType TicketType? @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId String?
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  order     Order?   @relation(fields: [orderId], references: [id])
+  orderId   String?
+  amount    Float
+  ticketType TicketType? @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId String?
+  createdAt DateTime @default(now())
+}
+
+model AnalyticsExport {
+  id        String   @id @default(cuid())
+  eventId   String
+  path      String
+  createdAt DateTime @default(now())
+}
+
+// NOTE: PostGIS geometry column for Venue must be created/maintained via migrations / raw SQL.
+// Keep lat/long in the model for convenience; create spatial index at DB level.
+

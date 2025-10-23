@@ -1,0 +1,21 @@
+{
+  "0 debug pnpm:scope": {
+    "selected": 1,
+    "workspacePrefix": "C:\\Users\\paolo\\Desktop\\vscode"
+  },
+  "1 error pnpm": {
+    "errno": 1,
+    "code": "ELIFECYCLE",
+    "pkgid": "events-monorepo@0.1.0",
+    "stage": "dev:api",
+    "script": "pnpm --filter ./services/api dev",
+    "pkgname": "events-monorepo",
+    "err": {
+      "name": "pnpm",
+      "message": "events-monorepo@0.1.0 dev:api: `pnpm --filter ./services/api dev`\nExit status 1",
+      "code": "ELIFECYCLE",
+      "stack": "pnpm: events-monorepo@0.1.0 dev:api: `pnpm --filter ./services/api dev`\nExit status 1\n    at EventEmitter.<anonymous> (C:\\Users\\paolo\\AppData\\Local\\pnpm\\.tools\\pnpm\\7.0.0\\node_modules\\pnpm\\dist\\pnpm.cjs:106732:20)\n    at EventEmitter.emit (node:events:519:28)\n    at ChildProcess.<anonymous> (C:\\Users\\paolo\\AppData\\Local\\pnpm\\.tools\\pnpm\\7.0.0\\node_modules\\pnpm\\dist\\pnpm.cjs:93301:18)\n    at ChildProcess.emit (node:events:519:28)\n    at maybeClose (node:internal/child_process:1101:16)\n    at ChildProcess._handle.onexit (node:internal/child_process:304:5)"
+    }
+  },
+  "2 warn pnpm:global": " Local package.json exists, but node_modules missing, did you mean to install?"
+}

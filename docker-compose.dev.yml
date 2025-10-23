@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: events_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.3
+    ports:
+      - '7700:7700'
+    environment:
+      MEILI_NO_ANALYTICS: 'true'
+
+volumes:
+  db_data:
