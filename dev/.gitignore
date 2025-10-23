@@ -1,0 +1,8 @@
+*.log
+*.ps1.log
+dev.db
+.pnp.*
+node_modules/
+\.DS_Store
+/.vscode
+pnpm-debug.log*
